@@ -1,5 +1,13 @@
 # DPMBot
-A Discord Bot written in Python using Discord.py for Minecraft Server Queries
+A Discord Bot written in Python using Discord.py and mcstatus for Minecraft Server Queries
+With Various Commands like:
+
+#mc or #status > Checks the server status, Gotta add a picture here
+#list > lists the current online players
+#info > Gives a little info about the bot
+#help > Gives all commnands
+
+It also works with Rich Presence, showing the current server Status, Players Playing and Ping
 
 ## Getting Started
 You have to create a discord bot, and add it to your server.

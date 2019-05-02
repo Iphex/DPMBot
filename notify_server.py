@@ -208,8 +208,8 @@ def load_functions():
 
         embed.add_field(name="#hello", value="Says hello", inline=False)
         embed.add_field(name="#mc or #status", value="Checks the server status", inline=False)
-        embed.add_field(name="#list", value="lists the current online players, not programmed atm", inline=False)
-        embed.add_field(name="#lastonline", value="checks who was last to leave the server, not programmed atm", inline=False)
+        embed.add_field(name="#list", value="lists the current online players", inline=False)
+        #embed.add_field(name="#lastonline", value="checks who was last to leave the server, not programmed atm", inline=False)
         embed.add_field(name="#info", value="Gives a little info about the bot", inline=False)
         embed.add_field(name="#help", value="Gives this message", inline=False)
 
