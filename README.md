@@ -20,7 +20,7 @@ https://www.digitaltrends.com/gaming/how-to-make-a-discord-bot/ Follow Step 2 - 
 I used Python 3.7.3, but every Python 3.x Version should work (probably)
 
 
-You will need the libaries Discord.py and mcstatus
+You will need the libaries Discord.py and mcstatus [requirements.txt]
 You can add both libaries with pip install discord and pip install mcstatus
 Caution > mcstatus is abandoned. That means that there are a few bugs here and there
 
@@ -64,7 +64,7 @@ Other than that:
 Discord.py works with Async. the call "await" ONLY works in functions which are called by "async def bla()"
 I say this because, calling functions that should be awaited will raise an exception.
 
-## Feature to come
+## Features to come
 
 Integrate the bot into Heroku using github repository and still hide the config.py file
 and write something for the deployment there

@@ -284,16 +284,13 @@ def load_functions():
             else:
                 max_players = "??"
 
-            #The | makes it look nicer for some reason. Not so squished. Prob the Width of a emoticon
-            #is very small, causing the other embed to clip into it a bit.
-            # Looks like shit on mobile lol
             if response[2] == 0:
                 #TODO If no one is online, show last_online
-                players_online = "No one is online at the moment,last Online {0} 😢|".format(last_online)
+                players_online = "No one is online at the moment,last Online {0} 😢".format(last_online)
             elif response[2] == 1:
-                players_online = "There is one player online 😃|"
+                players_online = "There is one player online 😃"
             elif response[2] > 1:
-                players_online = "There are {0} players online 😃|".format(current_players)      
+                players_online = "There are {0} players online 😃".format(current_players)      
             
             status = "{0} is up! ✅".format(dns_name)
         else:
