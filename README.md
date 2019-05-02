@@ -3,8 +3,11 @@ A Discord Bot written in Python using Discord.py and mcstatus for Minecraft Serv
 With Various Commands like:
 
 #mc or #status > Checks the server status, Gotta add a picture here
+
 #list > lists the current online players
+
 #info > Gives a little info about the bot
+
 #help > Gives all commnands
 
 It also works with Rich Presence, showing the current server Status, Players Playing and Ping
@@ -24,7 +27,10 @@ I have Messaged the Author on Twitter and hope that the bug will be fixed someti
 ### Installing
 config.py has certain attributes that have to be set. It contains various possibly harmful imformation like your Discord Bot Token, which is why it is not included in this Repository. The Repository does have a example File [ex_config.py]
 
+
 Once config.py is set and configured with data like your server, your Bots token and/or Favicons
+
+
 
 Once that is done, you can now open notify_server.py in whatever Environment you like, and start it.
 The bot should (hopefully) join your Server and accept Commands with your prefix (mine is #)
@@ -38,12 +44,14 @@ Used serveval other Minecraft bots / Discord bots for info and code, most import
 Tho much doesnt look like his code anymore, a lot is based upon his structure. Tho it had to be rewritten
 for discord.py 1.0.1 since the libary was rewritten since he wrote that bot.
 
+
 ## General Information:
 Well first of all, this is my first project and first time working with git / github
 So I have no clue atm. how mergers etc. work, while I do have a general understanding of it :D
 If you have any bugs or suggestions, go ahead.
 Personally, I wouldnt use the bot just yet, until it restarts without problems and can be implemented into heroku
 to run forever. Also the code is terrible. Did I say this is like my third python project? 
+
 
 Other than that:
 Discord.py works with Async. the call "await" ONLY works in functions which are called by "async def bla()"
@@ -61,14 +69,17 @@ Make the bot not throw an expection when somebody enters a command that does not
 https://github.com/tech189/danny-bot/blob/master/danny-bot.py for a lot the framework for the bot.
 Allowed me to better understand how everything works.
 
+
 Lerokko from https://www.reddit.com/r/discordapp/comments/8yn9hp/i_made_a_bot_that_shows_the_live_status_of_our/
 for the framework around Rich Presence. 
+
 
 Both of these Bots use the old discord.py and not the new one, meaning they both do not work with the newest version
 
 ## License
 I have no clue if I need this but:
 This project is licensed under the GNU General Public License - see [LICENSE.md] for details.
+
 
 ## Contributing
 You can. Not sure how it works but you can!
