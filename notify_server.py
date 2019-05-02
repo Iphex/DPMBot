@@ -25,7 +25,7 @@ formatter = logging.Formatter("%(asctime)s %(levelname)-8s %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
-pingFrequency = 60
+pingFrequency = 6
 """
 class BotClient(discord.client):
     def __init__(self, *args, **kwargs):
@@ -366,7 +366,8 @@ async def status_task():
             a = "b"
         else:
             await client.change_presence(activity=discord.Game(name=tokens.server_name + ' is Offline'), status=discord.Status.idle)
-
+            raise SystemExit
+            # forcing the loop to restart, not that smooth since the bot will leave the server, not so nice
         if response[2] is not None:
             current_players = response[2]
         else:
@@ -399,10 +400,12 @@ async def on_ready():
     logger.info("Logged in as {0} (ID: {1})".format(client.user.name, client.user.id))
     print("Logged in as {0} (ID: {1})".format(client.user.name, client.user.id))
     print('------')
+    await client.change_presence(activity=discord.Game(name=tokens.server_name + ' is Offline'), status=discord.Status.idle)
 
 while True:
     client.remove_command('help')
     load_stuff()
+    #on Exit, loop wont start up again, gotta make him restart correctly by forcing a SystemExit
     client.loop.create_task(status_task())
     try:
         client.loop.run_until_complete(client.start(TOKEN))
