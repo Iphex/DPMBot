@@ -98,5 +98,6 @@ ENV/
 # mypy
 .mypy_cache/
 
-#Wuerzbot
-tokens.py
+#DPMBot
+config.py
+dpm_bot.log
