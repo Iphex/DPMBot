@@ -7,3 +7,4 @@ server_name = 'SERVER_NAME_WITH_SUFFIX EX. Hyrule.com'
 a_certain_user = '<@anumber Google: User Mention Python Discord>'
 favicon_github = "for Ex. https://raw.githubusercontent.com/iphex/DPMBot/master/logo.png"
 minecraft_server_log = "PATH_TO_YOUR_MINECRAFT_SERVER_LOG EX. D:\\AMPDatastore\\Instances\\Server\\Minecraft\\logs\\latest.log"
+owners = 'OwnderID from Discord'

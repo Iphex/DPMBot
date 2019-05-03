@@ -1,4 +1,5 @@
-# Written for Python 3.7.x
+__version__ = "0.0.4"
+
 
 import asyncio
 import datetime
@@ -16,7 +17,6 @@ import config
 #unsure how to exactly prevent this :
 TOKEN = config.discord_token
 client = commands.Bot(command_prefix='#')
-
 logger = logging.getLogger()
 handler = logging.FileHandler("dpm_bot.log", mode="a")
 formatter = logging.Formatter("%(asctime)s %(levelname)-8s %(message)s")
@@ -25,6 +25,7 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 # I have actually no clue how this works, but I need to implement logging :D
 
+LINE = '-------------------------'
 
 pingFrequency = 60
 # in Seconds
@@ -73,7 +74,7 @@ def mc_info(address, port):
                 description = query.motd
                 maps = query.map
                 latency = str(info)
-            except:
+            except Exception:
                 software = None
                 version = None
                 description = None
@@ -81,10 +82,12 @@ def mc_info(address, port):
                 maps = None
                 address = None
                 players_max = None
-        except:
+                logger.info('Could not set variables after Query', exc_info=True)
+        except Exception:
             players_online = query.players.online
             players_names = None
-    except:  
+            logger.info('Server Ping works, but Query Failed', exc_info=True)
+    except Exception:  
         #to make sure nothing is called that hasn't been set before
         print("status Failed!")
         status = False
@@ -98,6 +101,7 @@ def mc_info(address, port):
         address = None
         players_max = None
         last_online = ["", "", "", ""]
+        logger.info('Server Down, Status Ping Failed', exc_info=True)
     if software == "vanilla":
         try:
             # this doesnt work. Copied this over and have to go through and understand this all again.
@@ -122,8 +126,9 @@ def mc_info(address, port):
                             last_player = line[33:-15]
                             last_time = line[1:9]
             last_online = [old_log, time_started, last_player, last_time]
-        except:
+        except Exception:
             last_online = ["", "", "", ""]
+            logger.info('Minecraft Log Error', exc_info=True)
     #Logging threw an error here, so I gotta check it up again.       
     #logger.info(status, ip, players_online, players_names, software, version, description, last_online, latency, maps, address, players_max)
     return status, ip, players_online, players_names, software, version, description, last_online, latency, maps, address, players_max
@@ -136,8 +141,12 @@ def load_functions():
     """
     client.remove_command('help')
 
+    @property
+    def version(self):
+        return __version__
+
     @client.command(aliases=['hello', 'Hello', 'Hi', 'hi'])
-    async def _hello(message):
+    async def _hello(message: str.lower):
         """
             Command to say something and mention the author who asked.
         """
@@ -145,7 +154,7 @@ def load_functions():
         await message.send(msg)
 
     @client.command(aliases=['stop', 'Stop'])
-    async def _stop(message):
+    async def _stop(message: str.lower):
         """
             Raising a keyboardInterrupt and not SystemExit, because we catch both but turn SystemExit
             into a Restart of the Bot, while KeyboardInterrupt stops it. 
@@ -156,7 +165,7 @@ def load_functions():
         raise KeyboardInterrupt
 
     @client.command(aliases=['shhhh'])
-    async def _shutup(message):
+    async def _shutup(message: str.lower):
         """
             A command for a certain human being who thinks this bot
             is being abused...
@@ -165,7 +174,7 @@ def load_functions():
         await message.send(msg)
 
     @client.command(aliases=['info', 'information'])
-    async def _info(message):
+    async def _info(message: str.lower):
         """
             Info Command giving out the Code Source
         """
@@ -174,7 +183,7 @@ def load_functions():
         await message.send(msg)
 
     @client.command(aliases=['list', 'Liste'])
-    async def _list(message):
+    async def _list(message: str.lower):
         """
             Listing Current Players. Calls mc_info for Values
         """
@@ -201,7 +210,7 @@ def load_functions():
         await message.send(msg)
 
     @client.command(aliases=['help', 'Help'])
-    async def _help(message):
+    async def _help(message: str.lower):
         """
             Help Command using embeds to make it look ok
         """
@@ -217,7 +226,7 @@ def load_functions():
         await message.send(embed=embed)
 
     @client.command(aliases=['mc', 'minecraft', 'Minecraft', 'status', 'Status', 'up'])
-    async def _mc(message):
+    async def _mc(message: str.lower):
         await message.send("Fetching Server Status")
         response = mc_info(config.dns_name, int(config.port))
         if response[0]:
@@ -320,7 +329,7 @@ def load_functions():
         await message.send(embed=embed)   
 
     @client.command(aliases=['restart'])
-    async def _restart(message):
+    async def _restart(message: str.lower):
         """
             Doing a Soft Restart of the Bot, reloading all services
         """
@@ -354,14 +363,41 @@ def handle_exit():
             continue
         t.cancel()
         try:
-            client.loop.run_until_complete(asyncio.wait_for(t, 5, loop=client.loop))
+            #client.loop.run_until_complete(asyncio.wait_for(t, 5, loop=client.loop))
+            #testing gather all tasks. might work the same as wait_for
+            client.loop.run_until_complete(
+                asyncio.gather(*asyncio.Task.all_tasks())
+                )
             t.exception()
         except asyncio.InvalidStateError:
             pass
         except asyncio.TimeoutError:
             pass
         except asyncio.CancelledError:
+            logger.debug('All Pending task have been cancelled')
             pass
+
+async def is_owner(self, user):
+    allowed = {
+            int(x) for x in
+            str(config.owners.split(','))
+        }
+    return user.id in allowed
+
+"""
+def load_files():
+        Implement folder loading for future proof.
+        TODO gotta first turn the load stuff into a class
+    for file in os.listdir('cogs'):
+        if not file.endswith('.py'):
+            continue
+        cog = f'cogs.{file[:-3]}'
+        logger.info(info(f'Loading {cog}'))
+        try:
+            #self.load_extension(cog)
+        except Exception:
+            logger.exception(f'Failed to load {cog}')
+"""
 
 async def status_task():
     """
@@ -395,10 +431,11 @@ async def status_task():
                 max_players = response[11]
             else:
                 max_players = "??"
-        except:
+        except Exception:
             current_players = "??"
             latency = "??"
             max_players = "??"
+            logger.info('Server Down', exc_info=True)
 
         if response[2] == 0:
             await client.change_presence(activity=discord.Game(name='{0}/{1} \nPing: {2}'.format(current_players, max_players, latency)), status=discord.Status.idle)
@@ -414,9 +451,8 @@ async def on_ready():
     """
         Gets printed when the Bot logged into the Server and is ready to accept Commands
     """
+    logger.info(LINE)
     logger.info("Logged in as {0} (ID: {1})".format(client.user.name, client.user.id))
-    print("Logged in as {0} (ID: {1})".format(client.user.name, client.user.id))
-    print('------')
     await client.change_presence(activity=discord.Game(name=config.server_name + ' is Offline'), status=discord.Status.idle)
 
 while True:
@@ -432,14 +468,23 @@ while True:
     try:
         #actually unsure how it "realy" works, but it works? good enough :D
         client.loop.run_until_complete(client.start(TOKEN))
-        print("stuff")
+    except discord.LoginFailure:
+        logger.critical('Invalid token')
     except SystemExit:
         handle_exit()
     except KeyboardInterrupt:
         handle_exit()
         client.loop.close()
-        print("Program ended")
+        logger.info(LINE)
+        logger.info('Shutting Down DPMBot')
+        logger.info(LINE)
         break
 
     print("Bot restarting")
-    client = commands.Bot(command_prefix='#')
+    logger.info(LINE)
+    logger.info(f'v{__version__}')
+    logger.info('Authors: kyb3r, fourjr,  Taaku18')
+    logger.info(LINE)
+
+logger.info(LINE)
+client = commands.Bot(command_prefix='#')
