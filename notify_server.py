@@ -178,6 +178,7 @@ def load_functions():
         """
             Listing Current Players. Calls mc_info for Values
         """
+        #TODO embed current / max players 
         response = mc_info(config.dns_name, int(config.port))
         if response[2] is not None:
             current_players = response[2]
@@ -290,8 +291,8 @@ def load_functions():
             elif response[2] == 1:
                 players_online = "There is one player online 😃"
             elif response[2] > 1:
-                players_online = "There are {0} players online 😃".format(current_players)      
-            
+                players_online = "There are {0} players online 😃".format(current_players)
+    
             status = "{0} is up! ✅".format(dns_name)
         else:
             status = "The Minecraft server is down! ❌"
@@ -309,7 +310,9 @@ def load_functions():
         embed.set_footer(text="Powered by DPMBot", icon_url="{0}".format(config.favicon_github)))
         """
         if current_players != 0:
-            embed.add_field(name="Players {0}/{1}".format(current_players, max_players), value=players_online + "\n" + players_names)
+            #add minimum 5 spaces, and after that according to number of players.
+            embed.add_field(name="Players {0}/{1}".format(current_players, max_players), value=players_names + "\n")
+            embed.add_field(name="|", value=add_spaces(current_players))
 
         if latency != "??":
             embed.add_field(name="Minecraft Info", value="Ping: {0} ms\nIP: `{1}`\nVersion: `{2}`\nSoftware: `{3}`\nMap: `{4}`".format(latency, ip, version, software, maps), inline=True)
@@ -325,6 +328,15 @@ def load_functions():
         msg = 'Ok {0.author.mention}, I am Restarting! 👋'.format(message)
         raise SystemExit
 
+def add_spaces(amount):
+    """
+        should only work if more then 6 Players are there, to make sure the embed looks good.
+    """
+    spaces = "\t|\n\t|\n\t|\n\t|\n\t|\n"
+    i = 6
+    while i <= amount:
+        spaces += "\t|\n"
+    return spaces
 def handle_exit():
     """
         Function to handle Exits by taking into account current running loops 
