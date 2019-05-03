@@ -239,20 +239,17 @@ def load_functions():
                     players_names = ""
             else:
                 players_names = ""
-        
-            if ip is not None:
-                name = name + " (" + ip + ")"
-    
+
             if response[4] is not None:
                 software = response[4]
             else:
                 software = "??"
-    
+
             if response[5] is not None:
                 version = response[5]
             else:
                 version = "??"
-    
+
             if response[6] is not None:
                 motd = response[6]
             else:
@@ -287,12 +284,13 @@ def load_functions():
 
             if response[2] == 0:
                 #TODO If no one is online, show last_online
-                players_online = "No one is online at the moment,last Online {0} 😢".format(last_online)
+                players_online = "No one is online at the moment"
+                #players_online = "No one is online at the moment,last Online {0} 😢".format(last_online)
             elif response[2] == 1:
                 players_online = "There is one player online 😃"
             elif response[2] > 1:
                 players_online = "There are {0} players online 😃".format(current_players)
-    
+
             status = "{0} is up! ✅".format(dns_name)
         else:
             status = "The Minecraft server is down! ❌"
@@ -313,6 +311,8 @@ def load_functions():
             #add minimum 5 spaces, and after that according to number of players.
             embed.add_field(name="Players {0}/{1}".format(current_players, max_players), value=players_names + "\n")
             embed.add_field(name="|", value=add_spaces(current_players))
+        else:
+            embed.add_field(name="Players {0}/{1}".format(current_players, max_players), value=players_online + "\n")
 
         if latency != "??":
             embed.add_field(name="Minecraft Info", value="Ping: {0} ms\nIP: `{1}`\nVersion: `{2}`\nSoftware: `{3}`\nMap: `{4}`".format(latency, ip, version, software, maps), inline=True)
@@ -380,19 +380,24 @@ async def status_task():
             raise SystemExit
             # forcing the loop to restart, not that smooth since the bot will leave the server,
             #TODO Change to a smoother restart. Prob gotta do a double while loop
-        if response[2] is not None:
-            current_players = response[2]
-        else:
+        try:
+            if response[2] is not None:
+                current_players = response[2]
+            else:
+                current_players = "??"
+
+            if response[8] is not None:
+                latency = round(float(response[8]), 0)
+            else:
+                latency = "??"
+
+            if response[11] is not None:
+                max_players = response[11]
+            else:
+                max_players = "??"
+        except:
             current_players = "??"
-
-        if response[8] is not None:
-            latency = round(float(response[8]), 0)
-        else:
             latency = "??"
-
-        if response[11] is not None:
-            max_players = response[11]
-        else:
             max_players = "??"
 
         if response[2] == 0:
