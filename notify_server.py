@@ -318,10 +318,10 @@ def load_functions():
         """
         if current_players != 0:
             #add minimum 5 spaces, and after that according to number of players.
-            embed.add_field(name="Players {0}/{1}".format(current_players, max_players), value=players_names + "\n")
-            embed.add_field(name="|", value=add_spaces(current_players))
+            embed.add_field(name="Players {0} / {1}".format(current_players, max_players), value=players_names + "\n")
+            #embed.add_field(name="|", value=add_spaces(current_players))
         else:
-            embed.add_field(name="Players {0}/{1}".format(current_players, max_players), value=players_online + "\n")
+            embed.add_field(name="Players {0} / {1}".format(current_players, max_players), value=players_online + "\n")
 
         if latency != "??":
             embed.add_field(name="Minecraft Info", value="Ping: {0} ms\nIP: `{1}`\nVersion: `{2}`\nSoftware: `{3}`\nMap: `{4}`".format(latency, ip, version, software, maps), inline=True)
@@ -346,6 +346,7 @@ def add_spaces(amount):
     while i <= amount:
         spaces += "\t|\n"
     return spaces
+
 def handle_exit():
     """
         Function to handle Exits by taking into account current running loops 
@@ -413,7 +414,7 @@ async def status_task():
             a = "b"
         else:
             await client.change_presence(activity=discord.Game(name=config.server_name + ' is Offline'), status=discord.Status.idle)
-            raise SystemExit
+            #raise True
             # forcing the loop to restart, not that smooth since the bot will leave the server,
             #TODO Change to a smoother restart. Prob gotta do a double while loop
         try:
