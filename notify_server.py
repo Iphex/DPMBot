@@ -303,30 +303,40 @@ def load_functions():
             status = "{0} is up! ✅".format(dns_name)
         else:
             status = "The Minecraft server is down! ❌"
-            players_online = ""
-            players_names = ""
+            players_online = "??"
+            players_names = "??"
+            software = "??"
+            current_players = 0
+            max_players = 12
+            dns_name = "??"
+            maps = "??"
+            version = "??"
+            motd = config.dns_name
+            last_online = "??"
             name = config.server_name
             latency = "??"
             ip = "??"
-        embed = discord.Embed(colour=discord.Colour(0x80ff), description=status, timestamp=datetime.datetime.utcnow())
-        #TODO get favicon( learn wtf favicons are) from server > set static one to github from gewuerzhost
-        """if response[0]:
-            embed.set_author(name=name, icon_url="http://www.google.com/s2/favicons?domain=" + ip)
-        else:
-            embed.set_author(name=message_input[1], icon_url="http://www.google.com/s2/favicons?domain=" + message_input[1])
-        embed.set_footer(text="Powered by DPMBot", icon_url="{0}".format(config.favicon_github)))
-        """
-        if current_players != 0:
-            #add minimum 5 spaces, and after that according to number of players.
-            embed.add_field(name="Players {0}/{1}".format(current_players, max_players), value=players_names + "\n")
-            embed.add_field(name="|", value=add_spaces(current_players))
-        else:
+        try:
+            embed = discord.Embed(colour=discord.Colour(0x80ff), description=status, timestamp=datetime.datetime.utcnow())
+            embed.set_footer(text="Powered by DPMBot", icon_url="{0}".format(config.favicon_github))
+            if current_players != 0:
+                #add minimum 5 spaces, and after that according to number of players.
+                embed.add_field(name="Players {0} / {1}".format(current_players, max_players), value=players_names + "\n")
+                #TODO looks like shit on mobile...
+                #embed.add_field(name="|", value=add_spaces(current_players))
+            else:
+                embed.add_field(name="Players {0} / {1}".format(current_players, max_players), value=players_online + "\n")
+
+            if latency != "??":
+                embed.add_field(name="Minecraft Info", value="Ping: {0} ms\nIP: `{1}`\nVersion: `{2}`\nSoftware: `{3}`\nMap: `{4}`".format(latency, ip, version, software, maps), inline=True)
+            else:
+                embed.add_field(name="Minecraft Info", value="Offline", inline=True)
+        except Exception:
+            logger.error('Couldnt Embed', exc_info=True)
+            embed = discord.Embed(colour=discord.Colour(0x80ff), description=status, timestamp=datetime.datetime.utcnow())
             embed.add_field(name="Players {0}/{1}".format(current_players, max_players), value=players_online + "\n")
 
-        if latency != "??":
-            embed.add_field(name="Minecraft Info", value="Ping: {0} ms\nIP: `{1}`\nVersion: `{2}`\nSoftware: `{3}`\nMap: `{4}`".format(latency, ip, version, software, maps), inline=True)
-
-        await message.send(embed=embed)   
+        await message.send(embed=embed)
 
     @client.command(aliases=['restart'])
     async def _restart(message: str.lower):
@@ -343,6 +353,7 @@ def add_spaces(amount):
     """
     spaces = "\t|\n\t|\n\t|\n\t|\n\t|\n"
     i = 6
+    amount = int(amount)
     while i <= amount:
         spaces += "\t|\n"
     return spaces
@@ -404,7 +415,8 @@ async def status_task():
         Loop to change Task acording to Server Status using Asynchronous Commands
     """
     await client.wait_until_ready()
-    while True:
+    x = 0
+    while x <= 5:
         await asyncio.sleep(pingFrequency)
         response = mc_info(config.dns_name, int(config.port))
         if response[0]:
@@ -483,8 +495,6 @@ while True:
     print("Bot restarting")
     logger.info(LINE)
     logger.info(f'v{__version__}')
-    logger.info('Authors: kyb3r, fourjr,  Taaku18')
     logger.info(LINE)
 
-logger.info(LINE)
 client = commands.Bot(command_prefix='#')
