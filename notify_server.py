@@ -27,7 +27,7 @@ logger.setLevel(logging.INFO)
 
 LINE = '-------------------------'
 
-pingFrequency = 60
+pingFrequency = 10
 # in Seconds
 
 
@@ -303,30 +303,40 @@ def load_functions():
             status = "{0} is up! ✅".format(dns_name)
         else:
             status = "The Minecraft server is down! ❌"
-            players_online = ""
-            players_names = ""
+            players_online = "??"
+            players_names = "??"
+            software = "??"
+            current_players = 0
+            max_players = 12
+            dns_name = "??"
+            maps = "??"
+            version = "??"
+            motd = config.dns_name
+            last_online = "??"
             name = config.server_name
             latency = "??"
             ip = "??"
-        embed = discord.Embed(colour=discord.Colour(0x80ff), description=status, timestamp=datetime.datetime.utcnow())
-        #TODO get favicon( learn wtf favicons are) from server > set static one to github from gewuerzhost
-        """if response[0]:
-            embed.set_author(name=name, icon_url="http://www.google.com/s2/favicons?domain=" + ip)
-        else:
-            embed.set_author(name=message_input[1], icon_url="http://www.google.com/s2/favicons?domain=" + message_input[1])
-        embed.set_footer(text="Powered by DPMBot", icon_url="{0}".format(config.favicon_github)))
-        """
-        if current_players != 0:
-            #add minimum 5 spaces, and after that according to number of players.
-            embed.add_field(name="Players {0} / {1}".format(current_players, max_players), value=players_names + "\n")
-            #embed.add_field(name="|", value=add_spaces(current_players))
-        else:
-            embed.add_field(name="Players {0} / {1}".format(current_players, max_players), value=players_online + "\n")
+        try:
+            embed = discord.Embed(colour=discord.Colour(0x80ff), description=status, timestamp=datetime.datetime.utcnow())
+            embed.set_footer(text="Powered by DPMBot", icon_url="{0}".format(config.favicon_github))
+            if current_players != 0:
+                #add minimum 5 spaces, and after that according to number of players.
+                embed.add_field(name="Players {0} / {1}".format(current_players, max_players), value=players_names + "\n")
+                #TODO looks like shit on mobile...
+                #embed.add_field(name="|", value=add_spaces(current_players))
+            else:
+                embed.add_field(name="Players {0} / {1}".format(current_players, max_players), value=players_online + "\n")
 
-        if latency != "??":
-            embed.add_field(name="Minecraft Info", value="Ping: {0} ms\nIP: `{1}`\nVersion: `{2}`\nSoftware: `{3}`\nMap: `{4}`".format(latency, ip, version, software, maps), inline=True)
+            if latency != "??":
+                embed.add_field(name="Minecraft Info", value="Ping: {0} ms\nIP: `{1}`\nVersion: `{2}`\nSoftware: `{3}`\nMap: `{4}`".format(latency, ip, version, software, maps), inline=True)
+            else:
+                embed.add_field(name="Minecraft Info", value="Offline", inline=True)
+        except Exception:
+            logger.error('Couldnt Embed', exc_info=True)
+            embed = discord.Embed(colour=discord.Colour(0x80ff), description=status, timestamp=datetime.datetime.utcnow())
+            embed.add_field(name="Players {0}/{1}".format(current_players, max_players), value=players_online + "\n")
 
-        await message.send(embed=embed)   
+        await message.send(embed=embed)
 
     @client.command(aliases=['restart'])
     async def _restart(message: str.lower):
@@ -343,6 +353,7 @@ def add_spaces(amount):
     """
     spaces = "\t|\n\t|\n\t|\n\t|\n\t|\n"
     i = 6
+    amount = int(amount)
     while i <= amount:
         spaces += "\t|\n"
     return spaces
@@ -364,11 +375,11 @@ def handle_exit():
             continue
         t.cancel()
         try:
-            #client.loop.run_until_complete(asyncio.wait_for(t, 5, loop=client.loop))
+            client.loop.run_until_complete(asyncio.wait_for(t, 5, loop=client.loop))
             #testing gather all tasks. might work the same as wait_for
-            client.loop.run_until_complete(
+            """client.loop.run_until_complete(
                 asyncio.gather(*asyncio.Task.all_tasks())
-                )
+                )"""
             t.exception()
         except asyncio.InvalidStateError:
             pass
@@ -405,7 +416,8 @@ async def status_task():
         Loop to change Task acording to Server Status using Asynchronous Commands
     """
     await client.wait_until_ready()
-    while True:
+    x = 0
+    while x <= 5:
         await asyncio.sleep(pingFrequency)
         response = mc_info(config.dns_name, int(config.port))
         if response[0]:
@@ -414,7 +426,8 @@ async def status_task():
             a = "b"
         else:
             await client.change_presence(activity=discord.Game(name=config.server_name + ' is Offline'), status=discord.Status.idle)
-            #raise True
+            print("Response is not true")
+            #raise SystemExit
             # forcing the loop to restart, not that smooth since the bot will leave the server,
             #TODO Change to a smoother restart. Prob gotta do a double while loop
         try:
@@ -453,24 +466,26 @@ async def on_ready():
         Gets printed when the Bot logged into the Server and is ready to accept Commands
     """
     logger.info(LINE)
+    print("Logged in as {0} (ID: {1})".format(client.user.name, client.user.id))
     logger.info("Logged in as {0} (ID: {1})".format(client.user.name, client.user.id))
     await client.change_presence(activity=discord.Game(name=config.server_name + ' is Offline'), status=discord.Status.idle)
 
+load_functions()
 while True:
     """
         so, the idea is to let the bot restart itself when something goes wrong and it crashed.
         atm it is getting abused to restart the bot when the Server is offline.
-        Since for some to me unknown reason the programm loses all client. stuff I added
+        Since for some to me unknown reason the programm loses its Client connection. stuff I added
         (maybe because I set client = again?) I have to call load_functions again
     """
-    load_functions()
     #creates a loop task. The loop taks waits around 60 seconds(acc. to ping_frequency)
     client.loop.create_task(status_task())
     try:
         #actually unsure how it "realy" works, but it works? good enough :D
         client.loop.run_until_complete(client.start(TOKEN))
-    except discord.LoginFailure:
-        logger.critical('Invalid token')
+    #except discord.LoginFailure:
+    # this might create a bug unsure tho :( 
+    #    logger.critical('Invalid token')
     except SystemExit:
         handle_exit()
     except KeyboardInterrupt:
@@ -484,8 +499,7 @@ while True:
     print("Bot restarting")
     logger.info(LINE)
     logger.info(f'v{__version__}')
-    logger.info('Authors: kyb3r, fourjr,  Taaku18')
     logger.info(LINE)
 
-logger.info(LINE)
+print("Broke out of while True chain")
 client = commands.Bot(command_prefix='#')

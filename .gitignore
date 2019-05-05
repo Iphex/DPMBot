@@ -101,3 +101,5 @@ ENV/
 #DPMBot
 config.py
 dpm_bot.log
+Pipfile
+Pipfile.lock
