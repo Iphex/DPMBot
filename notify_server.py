@@ -27,7 +27,7 @@ logger.setLevel(logging.INFO)
 
 LINE = '-------------------------'
 
-pingFrequency = 60
+pingFrequency = 10
 # in Seconds
 
 
@@ -374,11 +374,11 @@ def handle_exit():
             continue
         t.cancel()
         try:
-            #client.loop.run_until_complete(asyncio.wait_for(t, 5, loop=client.loop))
+            client.loop.run_until_complete(asyncio.wait_for(t, 5, loop=client.loop))
             #testing gather all tasks. might work the same as wait_for
-            client.loop.run_until_complete(
+            """client.loop.run_until_complete(
                 asyncio.gather(*asyncio.Task.all_tasks())
-                )
+                )"""
             t.exception()
         except asyncio.InvalidStateError:
             pass
@@ -425,7 +425,8 @@ async def status_task():
             a = "b"
         else:
             await client.change_presence(activity=discord.Game(name=config.server_name + ' is Offline'), status=discord.Status.idle)
-            raise SystemExit
+            print("Response is not true")
+            #raise SystemExit
             # forcing the loop to restart, not that smooth since the bot will leave the server,
             #TODO Change to a smoother restart. Prob gotta do a double while loop
         try:
@@ -464,24 +465,26 @@ async def on_ready():
         Gets printed when the Bot logged into the Server and is ready to accept Commands
     """
     logger.info(LINE)
+    print("Logged in as {0} (ID: {1})".format(client.user.name, client.user.id))
     logger.info("Logged in as {0} (ID: {1})".format(client.user.name, client.user.id))
     await client.change_presence(activity=discord.Game(name=config.server_name + ' is Offline'), status=discord.Status.idle)
 
+load_functions()
 while True:
     """
         so, the idea is to let the bot restart itself when something goes wrong and it crashed.
         atm it is getting abused to restart the bot when the Server is offline.
-        Since for some to me unknown reason the programm loses all client. stuff I added
+        Since for some to me unknown reason the programm loses its Client connection. stuff I added
         (maybe because I set client = again?) I have to call load_functions again
     """
-    load_functions()
     #creates a loop task. The loop taks waits around 60 seconds(acc. to ping_frequency)
     client.loop.create_task(status_task())
     try:
         #actually unsure how it "realy" works, but it works? good enough :D
         client.loop.run_until_complete(client.start(TOKEN))
-    except discord.LoginFailure:
-        logger.critical('Invalid token')
+    #except discord.LoginFailure:
+    # this might create a bug unsure tho :( 
+    #    logger.critical('Invalid token')
     except SystemExit:
         handle_exit()
     except KeyboardInterrupt:
@@ -497,4 +500,5 @@ while True:
     logger.info(f'v{__version__}')
     logger.info(LINE)
 
+print("Broke out of while True chain")
 client = commands.Bot(command_prefix='#')
