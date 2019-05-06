@@ -170,7 +170,16 @@ def load_functions():
             A command for a certain human being who thinks this bot
             is being abused...
         """
-        msg = 'Thank you my godemporer {0.author.mention}, I hereby order {} to shut the fuck up, I am here of Free Will! 👋'.format(message, config.a_certain_user)
+        msg = 'Thank you my godemporer {0.author.mention}, I hereby order {0} to shut the fuck up, I am here of Free Will! 👋'.format(message, config.a_certain_user)
+        await message.send(msg)
+
+    @client.command(aliases=['kshutup'])
+    async def _shutup_second(message: str.lower):
+        """
+            A command for a certain human being who thinks this bot
+            is being abused...
+        """
+        msg = 'Thank you my godemporer {0.author.mention}, I hereby order {0} to shut the fuck up! 👋'.format(message, config.a_certain_user_second)
         await message.send(msg)
 
     @client.command(aliases=['info', 'information'])
