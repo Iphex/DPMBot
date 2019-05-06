@@ -155,10 +155,15 @@ def load_functions():
 
     @client.command(aliases=['stop', 'Stop'])
     async def _stop(message: str.lower):
+        """variable = message.author.id
+        print(variable)"""
+        #if await is_owner(message):
         """
-            Raising a keyboardInterrupt and not SystemExit, because we catch both but turn SystemExit
-            into a Restart of the Bot, while KeyboardInterrupt stops it. 
-            This is Abuseable, should probl remove once you are done testing, or something.
+            Raising a keyboardInterrupt and not SystemExit
+            , because we catch both but t urn SystemExit
+            into a Restart of the Bot, while KeyboardInterrupt stops it
+            This is Abuseable, should probl remove once you are
+            done testing, or something.
         """
         msg = 'Byyyyyiiiee {0.author.mention}, 👋'.format(message)
         await message.send(msg)
@@ -170,7 +175,7 @@ def load_functions():
             A command for a certain human being who thinks this bot
             is being abused...
         """
-        msg = 'Thank you my godemporer {0.author.mention}, I hereby order {} to shut the fuck up, I am here of Free Will! 👋'.format(message, config.a_certain_user)
+        msg = 'Thank you my godemporer {0.author.mention}, I hereby order @{1} to shut the fuck up, I am here of Free Will! 👋'.format(message, config.a_certain_user)
         await message.send(msg)
 
     @client.command(aliases=['info', 'information'])
@@ -357,6 +362,7 @@ def add_spaces(amount):
     while i <= amount:
         spaces += "\t|\n"
     return spaces
+
 def handle_exit():
     """
         Function to handle Exits by taking into account current running loops 
@@ -376,9 +382,6 @@ def handle_exit():
         try:
             client.loop.run_until_complete(asyncio.wait_for(t, 5, loop=client.loop))
             #testing gather all tasks. might work the same as wait_for
-            """client.loop.run_until_complete(
-                asyncio.gather(*asyncio.Task.all_tasks())
-                )"""
             t.exception()
         except asyncio.InvalidStateError:
             pass
@@ -388,13 +391,17 @@ def handle_exit():
             logger.debug('All Pending task have been cancelled')
             pass
 
-async def is_owner(self, user):
-    allowed = {
-            int(x) for x in
-            str(config.owners.split(','))
-        }
-    return user.id in allowed
+async def is_owner(user):
+    allowed = convert(config.owners)
+    allowed = str(config.owners.split(','))
+    for i in allowed:
+        print(i)
+        if user.author.id == i:
+            return True
+    return False
 
+def convert(list):
+    return tuple(i for i in list)
 """
 def load_files():
         Implement folder loading for future proof.
@@ -499,6 +506,7 @@ while True:
     logger.info(LINE)
     logger.info(f'v{__version__}')
     logger.info(LINE)
+    client = commands.Bot(command_prefix='#')
+    load_functions()
 
 print("Broke out of while True chain")
-client = commands.Bot(command_prefix='#')
