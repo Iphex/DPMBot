@@ -103,3 +103,4 @@ config.py
 dpm_bot.log
 Pipfile
 Pipfile.lock
+.vscode/settings.json
