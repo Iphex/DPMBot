@@ -76,17 +76,6 @@ def mc_info(address, port):
         server = mcstatus.MinecraftServer.lookup(address)
     else:
         server = mcstatus.MinecraftServer(address, int(port))
-
-    if config.server_name_no_caps in address: # pylint: disable=no-member
-        response = urllib.request.urlopen("https://api.ipify.org/?format=json")
-        data = response.read().decode("utf-8")
-        jsondata = json.loads(data)
-        ip = jsondata["ip"]
-    else:
-        try:
-            ip = address
-        except:
-            ip = None
     try:
         # usually you would use server.Status here, but for some reason it stopped working :D
         # If the recipent Server is sleeping, the ping will Fail! Some Servers do have a feature
@@ -96,6 +85,7 @@ def mc_info(address, port):
         try:
             # See server.query file for info on what information query gives
             query = server.query()
+            ip = None
             players_names = query.players.names  # ex ['user1','user2','user2']
             players_online = query.players.online
             players_max = query.players.max
@@ -115,6 +105,7 @@ def mc_info(address, port):
                 description = None
                 latency = None
                 maps = None
+                ip = None
                 address = None
                 players_max = None
                 last_online = None
@@ -132,6 +123,7 @@ def mc_info(address, port):
         players_names = None
         software = None
         version = None
+        ip = None
         description = None
         latency = None
         maps = None
@@ -273,10 +265,7 @@ def load_functions():
         await ctx.send("Fetching Server Status")
         response = mc_info(config.dns_name, int(config.port)) # pylint: disable=no-member
         if response[0]:
-            if response[1] is not None:
-                ip = response[1]
-            else:
-                ip = "??"
+            ip = config.ip
             if response[2] is not None:
                 current_players = response[2]
             else:
@@ -419,11 +408,11 @@ def load_functions():
     async def on_resumed():
         print('reconnected')
 
-   """ @commands.Cog.listener()
+    @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        """"""The event triggered when an error is raised while invoking a command.
+        """The event triggered when an error is raised while invoking a command.
         ctx   : Context
-        error : Exception""""""
+        error : Exception"""
 
         if hasattr(ctx.command, 'on_error'):
             return
