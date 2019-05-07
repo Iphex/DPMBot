@@ -6,6 +6,7 @@ import datetime
 import json
 import logging
 import os
+import re
 import urllib.request
 
 import discord
@@ -29,6 +30,37 @@ LINE = '-------------------------'
 
 pingFrequency = 10
 # in Seconds
+
+
+def get_prefix(bot, message):
+    """A callable Prefix for our bot. This could be edited to allow per server prefixes."""
+
+    prefixes = ['#']
+
+    # Check to see if we are outside of a guild. e.g DM's etc.
+    if not message.guild:
+        # Only allow ? to be used in DMs
+        return '?'
+
+    # If we are in a guild, we allow for the user to mention us or use any of the prefixes in our list.
+    return commands.when_mentioned_or(*prefixes)(bot, message)
+
+
+"""
+for later use, adapting changes from
+https://gist.github.com/EvieePy/d78c061a4798ae81be9825468fe146be
+initial_extensions = ['cogs.simple',
+                      'cogs.members',
+                      'cogs.owner']
+
+if __name__ == '__main__':
+    for extension in initial_extensions:
+        bot.load_extension(extension)
+
+"""
+
+
+
 
 
 def mc_info(address, port):
@@ -73,7 +105,8 @@ def mc_info(address, port):
                 version = query.software.version #ex. 1.14
                 description = query.motd
                 maps = query.map
-                latency = str(info)
+                latency = info.rstrip('0')
+                latency = re.sub("\.", "", latency)
             except Exception:
                 software = None
                 version = None
@@ -323,7 +356,7 @@ def load_functions():
             ip = "??"
         try:
             embed = discord.Embed(colour=discord.Colour(0x80ff), description=status, timestamp=datetime.datetime.utcnow())
-            embed.set_footer(text="Powered by DPMBot", icon_url="{0}".format(config.favicon_github))
+            embed.set_footer(text="DPMBot by Tuemiyan", icon_url="{0}".format(config.favicon_github))
             if current_players != 0:
                 #add minimum 5 spaces, and after that according to number of players.
                 embed.add_field(name="Players {0} / {1}".format(current_players, max_players), value=players_names + "\n")
@@ -351,6 +384,10 @@ def load_functions():
         print("Terminating")
         msg = 'Ok {0.author.mention}, I am Restarting! 👋'.format(message)
         raise SystemExit
+    
+    @client.event
+    async def on_resumed():
+        print('reconnected')
 
 def add_spaces(amount):
     """
@@ -488,7 +525,7 @@ while True:
     client.loop.create_task(status_task())
     try:
         #actually unsure how it "realy" works, but it works? good enough :D
-        client.loop.run_until_complete(client.start(TOKEN))
+        client.loop.run_until_complete(client.start(TOKEN, bot=True, reconnect=True))
     #except discord.LoginFailure:
     # this might create a bug unsure tho :( 
     #    logger.critical('Invalid token')
