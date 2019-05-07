@@ -39,6 +39,7 @@ def mc_info(address, port):
         The Implementation should work with a Port 25565, but I have only tested it with
         my own servers Port. Custom Ports Work.
     """
+    last_online = None
     if port is None:
         print("No Port specified using standard 25565")
         server = mcstatus.MinecraftServer.lookup(address)
@@ -82,6 +83,7 @@ def mc_info(address, port):
                 maps = None
                 address = None
                 players_max = None
+                last_online = None
                 logger.info('Could not set variables after Query', exc_info=True)
         except Exception:
             players_online = query.players.online
@@ -109,6 +111,7 @@ def mc_info(address, port):
             time_started = None
             last_player = None
             last_time = None
+            last_online = None
             get_path_time = os.path.getmtime(mc_log)
             nicetime = datetime.datetime.fromtimestamp(get_path_time)
             if nicetime.date() < datetime.datetime.today().date():
