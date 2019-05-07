@@ -104,3 +104,4 @@ dpm_bot.log
 Pipfile
 Pipfile.lock
 .vscode/settings.json
+.vscode/launch.json
