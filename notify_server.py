@@ -57,7 +57,6 @@ initial_extensions = ['cogs.simple',
 if __name__ == '__main__':
     for extension in initial_extensions:
         bot.load_extension(extension)
-
 """
 
 
@@ -76,9 +75,8 @@ def mc_info(address, port):
         print("No Port specified using standard 25565")
         server = mcstatus.MinecraftServer.lookup(address)
     else:
-        server = mcstatus.MinecraftServer(address, port)
+        server = mcstatus.MinecraftServer(address, int(port))
 
-    mc_log = config.minecraft_server_log # pylint: disable=no-member
     if config.server_name_no_caps in address: # pylint: disable=no-member
         response = urllib.request.urlopen("https://api.ipify.org/?format=json")
         data = response.read().decode("utf-8")
@@ -93,7 +91,7 @@ def mc_info(address, port):
         # usually you would use server.Status here, but for some reason it stopped working :D
         # If the recipent Server is sleeping, the ping will Fail! Some Servers do have a feature
         # to wake up when pinged
-        info = server.ping()
+        info = int(server.ping())
         status = True
         try:
             # See server.query file for info on what information query gives
@@ -101,12 +99,15 @@ def mc_info(address, port):
             players_names = query.players.names  # ex ['user1','user2','user2']
             players_online = query.players.online
             players_max = query.players.max
+            last_online = None
             try:
                 software = query.software.brand  # ex. Vanilla
                 version = query.software.version  # ex. 1.14
                 description = query.motd
                 maps = query.map
-                latency = info.rstrip('0')
+                latency = str(info)
+                latency = latency.rstrip('0')
+               # latency = info
                 latency = re.sub("\.", "", latency)
             except Exception:
                 software = None
@@ -116,6 +117,7 @@ def mc_info(address, port):
                 maps = None
                 address = None
                 players_max = None
+                last_online = None
                 logger.info('Could not set variables after Query',
                             exc_info=True)
         except Exception:
@@ -137,35 +139,6 @@ def mc_info(address, port):
         players_max = None
         last_online = ["", "", "", ""]
         logger.info('Server Down, Status Ping Failed', exc_info=True)
-    """ Not working atm. gotta take a look at it again
-    if software == "vanilla":
-        try:
-            # this doesnt work. Copied this over and have to go through and understand this all again.
-            old_log = None
-            time_started = None
-            last_player = None
-            last_time = None
-            get_path_time = os.path.getmtime(mc_log)
-            nicetime = datetime.datetime.fromtimestamp(get_path_time)
-            if nicetime.date() < datetime.datetime.today().date():
-                old_log = True
-            else:
-                old_log = False
-            if old_log is False:
-                with open(mc_log, mode="r", encoding="utf-8") as file:
-                    for line in file:
-                        if line[11:58] == "[Server thread/INFO]: Starting Minecraft server":
-                            time_started = line[1:9]
-                with open(mc_log, mode="r", encoding="utf-8") as file:
-                    for line in file:
-                        if line[11:33] == "[Server thread/INFO]: " and line[-15:] == " left the game\n":
-                            last_player = line[33:-15]
-                            last_time = line[1:9]
-            last_online = [old_log, time_started, last_player, last_time]
-        except Exception:
-            last_online = ["", "", "", ""]
-            logger.info('Minecraft Log Error', exc_info=True)
-        """
     # Logging threw an error here, so I gotta check it up again.
     #logger.info(status, ip, players_online, players_names, software, version, description, last_online, latency, maps, address, players_max)
     return (status, ip, players_online, players_names,
@@ -207,7 +180,7 @@ def load_functions():
         raise KeyboardInterrupt
 
     @_stop.error
-    async def _stop_handler(self, ctx, error):
+    async def _stop_handler(ctx,):
         await ctx.send("You are not allowed to use the Command Stop")
 
     @client.command(aliases=['shhhh'])
@@ -441,16 +414,16 @@ def load_functions():
         print("Terminating")
         msg = 'Ok {0.author.mention}, I am Restarting! 👋'.format(ctx)
         raise SystemExit
-    
+
     @client.event
     async def on_resumed():
         print('reconnected')
 
-    @commands.Cog.listener()
+   """ @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
-        """The event triggered when an error is raised while invoking a command.
+        """"""The event triggered when an error is raised while invoking a command.
         ctx   : Context
-        error : Exception"""
+        error : Exception""""""
 
         if hasattr(ctx.command, 'on_error'):
             return
@@ -475,7 +448,7 @@ def load_functions():
                 return await ctx.send('I could not find that member. Please try again.')
 
        # print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
-       #Prints way to much atm :D  traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+       #Prints way to much atm :D  traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)"""
 
 
 def add_spaces(amount):
@@ -542,73 +515,63 @@ def load_files():
             logger.exception(f'Failed to load {cog}')
 """
 
-
 async def status_task():
     """
         Loop to change Task acording to Server Status using Asynchronous Commands
     """
     await client.wait_until_ready()
-    x = 0
-    while x <= 5:
+    while True:
         await asyncio.sleep(ping_Frequency)
         response = mc_info(config.dns_name, config.port) # pylint: disable=no-member
         try:
-            if response[0]:
-            # not sure how to let it empty or something
-            # :D would be smarter to write if respone[0]
-            # is not true or something.TODO
-                a = "b"
-            else:
+            if response[0] is False:
                 await client.change_presence(
                     activity=discord.Game(
-                    name=config.server_name + ' is Offline'),  # pylint: disable=no-member
+                        name=config.server_name + ' is Offline'),  # pylint: disable=no-member
                     status=discord.Status.dnd)
                 print("Response is not true")
+                continue
+            else:
+                try:
+                    if response[2] is not None:
+                        current_players = response[2]
+                    else:
+                        current_players = "??"
+
+                    if response[8] is not None:
+                        latency = response[8]
+                    else:
+                        latency = "??"
+
+                    if response[11] is not None:
+                        max_players = response[11]
+                    else:
+                        max_players = "??"
+                except Exception:
+                    current_players = "??"
+                    latency = "??"
+                    max_players = "??"
+                    logger.info('Server Down', exc_info=True)
+                    continue
+
+                if current_players == 0:
+                    await client.change_presence(
+                        activity=discord.Game(
+                            name='{0}/{1} \nPing: {2}'.format(current_players, max_players, latency)),
+                        status=discord.Status.idle)
+
+                elif current_players >= 1:
+                    await client.change_presence(
+                        activity=discord.Game(
+                            name='{0}/{1} \nPing: {2}'.format(current_players, max_players, latency)),
+                        status=discord.Status.online)
+
+                 #do a lot of stuff
         except Exception as e:
-            continue
+            print("exception", e)
             #raise SystemExit
             # forcing the loop to restart, not that smooth since the bot will leave the server,
             # TODO Change to a smoother restart. Prob gotta do a double while loop
-        try:
-            if response[2] is not None:
-                current_players = response[2]
-            else:
-                current_players = "??"
-
-            if response[8] is not None:
-                latency = round(float(response[8]), 0)
-            else:
-                latency = "??"
-
-            if response[11] is not None:
-                max_players = response[11]
-            else:
-                max_players = "??"
-        except Exception:
-            current_players = "??"
-            latency = "??"
-            max_players = "??"
-            logger.info('Server Down', exc_info=True)
-            continue
-
-        if response[2] == 0:
-            await client.change_presence(
-                activity=discord.Game(
-                name='{0}/{1} \nPing: {2}'.format(current_players, max_players, latency)),
-                status=discord.Status.idle)
-
-        elif response[2] == 1:
-            await client.change_presence(
-                activity=discord.Game(
-                name='{0}/{1} \nPing: {2}'.format(current_players, max_players, latency)),
-                status=discord.Status.online)
-
-        elif response[2] > 1:
-            await client.change_presence(
-                activity=discord.Game(
-                name='{0}/{1} \nPing: {2}'.format(current_players, max_players, latency)),
-                status=discord.Status.online)
-
 
 @client.event
 async def on_ready():
@@ -622,7 +585,7 @@ async def on_ready():
         client.user.name, client.user.id))
     await client.change_presence(
         activity=discord.Game(
-        name=config.server_name + ' is Offline'), # pylint: disable=no-member
+            name=config.server_name + ' is Offline'), # pylint: disable=no-member
         status=discord.Status.dnd)
 
 load_functions()
@@ -635,7 +598,7 @@ while True:
 
         After more researching I found that the bot can restart itself...
     """
-    # creates a loop task. The loop taks waits around 60 seconds(acc. to ping_Frequency)
+    # creates a loop task. The loop taks waits around 10 seconds(acc. to ping_Frequency)
     client.loop.create_task(status_task())
     try:
         # actually unsure how it "realy" works, but it works? good enough :D
