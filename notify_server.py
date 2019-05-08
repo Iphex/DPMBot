@@ -3,13 +3,9 @@ __version__ = "0.0.5"
 
 import asyncio
 import datetime
-import json
 import logging
-import os
 import re
-import urllib.request
 import traceback
-import sys
 
 import discord
 from discord.ext import commands
@@ -87,6 +83,7 @@ def mc_info(address, port):
             # See server.query file for info on what information query gives
             query = server.query()
             ip = None
+            plugins = ""
             players_names = query.players.names  # ex ['user1','user2','user2']
             players_online = query.players.online
             players_max = query.players.max
@@ -94,6 +91,11 @@ def mc_info(address, port):
             try:
                 software = query.software.brand  # ex. Vanilla
                 version = query.software.version  # ex. 1.14
+                plugins_versions = query.software.plugins # ex. Veinminer 2.5
+                for i in plugins_versions:
+                    plug = i.split(" ")
+                    plugins = plug[0] + ", " + plugins
+                plugins = plugins[:-2]
                 description = query.motd
                 maps = query.map
                 latency = str(info)
@@ -106,6 +108,7 @@ def mc_info(address, port):
                 description = None
                 latency = None
                 maps = None
+                plugins = None
                 ip = None
                 address = None
                 players_max = None
@@ -124,6 +127,7 @@ def mc_info(address, port):
         software = None
         version = None
         ip = None
+        plugins = None
         description = None
         latency = None
         maps = None
@@ -134,7 +138,7 @@ def mc_info(address, port):
     # Logging threw an error here, so I gotta check it up again.
     #logger.info(status, ip, players_online, players_names, software, version, description, last_online, latency, maps, address, players_max)
     return (status, ip, players_online, players_names,
-                software, version, description, last_online, latency, maps, address, players_max)
+                software, version, description, last_online, latency, maps, address, players_max, plugins)
 
 
 def load_functions():
@@ -319,6 +323,10 @@ def load_functions():
                 max_players = response[11]
             else:
                 max_players = "??"
+            if response[12] is not None:
+                plugins = response[12]
+            else:
+                plugins = "??"
 
             if response[2] == 0:
                 # TODO If no one is online, show last_online
@@ -371,8 +379,8 @@ def load_functions():
             if latency != "??":
                 embed.add_field(
                     name="Minecraft Info",
-                    value="Ping: {0} ms\nIP: `{1}`\nVersion: `{2}`\nSoftware: `{3}`\nMap: `{4}`"
-                    .format(latency, ip, version, software, maps),
+                    value="Ping: {0} ms\nIP: `{1}`\nMap: `{2}`\nVersion: `{3}`\nSoftware: `{4}`\nPlugins: '{5}'"
+                    .format(latency, ip, maps, version, software, plugins),
                     inline=False)
             else:
                 embed.add_field(
