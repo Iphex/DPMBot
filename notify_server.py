@@ -26,7 +26,7 @@ logger.setLevel(logging.INFO)
 
 LINE = '-------------------------'
 
-ping_Frequency = 10 # in Seconds
+ping_Frequency = 60 # in Seconds
 
 
 def get_prefix(bot, message):
@@ -466,19 +466,17 @@ def handle_exit():
         how-to-make-discord-py-bot-run-forever-if-client-run-returns
     """
     print("Handling")
-    # client.logout forces the bot to reconnect. TODO figure out how to
-    # make him not reconnect when the status_task loop fails
     client.loop.run_until_complete(client.logout())
-    for t in asyncio.Task.all_tasks(loop=client.loop):
-        if t.done():
-            t.exception()
+    for task in asyncio.Task.all_tasks(loop=client.loop):
+        if task.done():
+            task.exception()
             continue
-        t.cancel()
+        task.cancel()
         try:
             client.loop.run_until_complete(
                 asyncio.wait_for(t, 5, loop=client.loop))
             # testing gather all tasks. might work the same as wait_for
-            t.exception()
+            task.exception()
         except asyncio.InvalidStateError:
             pass
         except asyncio.TimeoutError:
