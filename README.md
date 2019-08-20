@@ -1,6 +1,6 @@
 # DPMBot
 A Discord Bot written in Python using Discord.py and mcstatus for Minecraft Server Queries
-with Various Commands like:
+with Various Commands like(so many):
 
 #mc or #status > Checks the server status, Gotta add a picture here
 
@@ -20,7 +20,7 @@ https://www.digitaltrends.com/gaming/how-to-make-a-discord-bot/ Follow Step 2 - 
 I used Python 3.7.3, but every Python 3.x Version should work (probably)
 
 
-You will need the libaries Discord.py and mcstatus [requirements.txt]
+You will need the libaries Discord.py (1.0.1 and up) and mcstatus. See [requirements.txt]
 You can add both libaries with pip install discord and pip install mcstatus
 
 
@@ -45,7 +45,7 @@ See Features to come
 
 
 ## General Information:
-Well first of all, this is my first project and first time working with git / github
+Well first of all, this is my first real project and first time working with git / github.
 So I have no clue atm. how mergers etc. work, while I do have a general understanding of it :D
 If you have any bugs or suggestions, go ahead.
 
@@ -67,12 +67,6 @@ Lerokko from https://www.reddit.com/r/discordapp/comments/8yn9hp/i_made_a_bot_th
 for the framework around Rich Presence.
 
 
-Both of these Bots use the old discord.py and not the new one, meaning they both do not work with the newest version
 
 ## License
-I have no clue if I need this but:
-This project is licensed under the GNU General Public License - see [LICENSE.md] for details.
-
-
-## Contributing
-You can. Not sure how it works but you can!
+This project is licensed under MIT, see [LICENSE.md] for details.

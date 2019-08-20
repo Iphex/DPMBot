@@ -3,13 +3,9 @@ __version__ = "0.0.5"
 #Python Libary
 import asyncio
 import datetime
-import json
 import logging
-import os
 import re
-import urllib.request
 import traceback
-import sys
 
 #Third Party
 import discord
@@ -52,7 +48,7 @@ logger.setLevel(logging.INFO)
 
 LINE = '-------------------------'
 
-ping_Frequency = 10 # in Seconds
+ping_Frequency = 60 # in Seconds
 
 
 def get_prefix(bot, message):
@@ -93,6 +89,7 @@ def mc_info(address, port):
         The Implementation should work with a Port 25565, but I have only tested it with
         my own servers Port. Custom Ports Work.
     """
+    last_online = None
     if port is None:
         print("No Port specified using standard 25565")
         server = mcstatus.MinecraftServer.lookup(address)
@@ -108,6 +105,7 @@ def mc_info(address, port):
             # See server.query file for info on what information query gives
             query = server.query()
             ip = None
+            plugins = ""
             players_names = query.players.names  # ex ['user1','user2','user2']
             players_online = query.players.online
             players_max = query.players.max
@@ -115,6 +113,11 @@ def mc_info(address, port):
             try:
                 software = query.software.brand  # ex. Vanilla
                 version = query.software.version  # ex. 1.14
+                plugins_versions = query.software.plugins # ex. Veinminer 2.5
+                for i in plugins_versions:
+                    plug = i.split(" ")
+                    plugins = plug[0] + ", " + plugins
+                plugins = plugins[:-2]
                 description = query.motd
                 maps = query.map
                 latency = str(info)
@@ -127,12 +130,12 @@ def mc_info(address, port):
                 description = None
                 latency = None
                 maps = None
+                plugins = None
                 ip = None
                 address = None
                 players_max = None
                 last_online = None
-                logger.info('Could not set variables after Query',
-                            exc_info=True)
+                logger.info('Could not set variables after Query', exc_info=True)
         except Exception:
             players_online = query.players.online
             players_names = None
@@ -146,6 +149,7 @@ def mc_info(address, port):
         software = None
         version = None
         ip = None
+        plugins = None
         description = None
         latency = None
         maps = None
@@ -156,7 +160,7 @@ def mc_info(address, port):
     # Logging threw an error here, so I gotta check it up again.
     #logger.info(status, ip, players_online, players_names, software, version, description, last_online, latency, maps, address, players_max)
     return (status, ip, players_online, players_names,
-                software, version, description, last_online, latency, maps, address, players_max)
+                software, version, description, last_online, latency, maps, address, players_max, plugins)
 
 
 def load_functions():
@@ -166,10 +170,6 @@ def load_functions():
 
     """
     client.remove_command('help')
-
-    @property
-    def version(self):
-        return __version__
 
     @client.command(aliases=['hello', 'Hello', 'Hi', 'hi'])
     async def _hello(ctx: str.lower):
@@ -345,6 +345,10 @@ def load_functions():
                 max_players = response[11]
             else:
                 max_players = "??"
+            if response[12] is not None:
+                plugins = response[12]
+            else:
+                plugins = "??"
 
             if response[2] == 0:
                 # TODO If no one is online, show last_online
@@ -397,8 +401,8 @@ def load_functions():
             if latency != "??":
                 embed.add_field(
                     name="Minecraft Info",
-                    value="Ping: {0} ms\nIP: `{1}`\nVersion: `{2}`\nSoftware: `{3}`\nMap: `{4}`"
-                    .format(latency, ip, version, software, maps),
+                    value="Ping: {0} ms\nIP: `{1}`\nMap: `{2}`\nVersion: `{3}`\nSoftware: `{4}`\nPlugins: '{5}'"
+                    .format(latency, ip, maps, version, software, plugins),
                     inline=False)
             else:
                 embed.add_field(
@@ -484,19 +488,17 @@ def handle_exit():
         how-to-make-discord-py-bot-run-forever-if-client-run-returns
     """
     print("Handling")
-    # client.logout forces the bot to reconnect. TODO figure out how to
-    # make him not reconnect when the status_task loop fails
     client.loop.run_until_complete(client.logout())
-    for t in asyncio.Task.all_tasks(loop=client.loop):
-        if t.done():
-            t.exception()
+    for task in asyncio.Task.all_tasks(loop=client.loop):
+        if task.done():
+            task.exception()
             continue
-        t.cancel()
+        task.cancel()
         try:
             client.loop.run_until_complete(
                 asyncio.wait_for(t, 5, loop=client.loop))
             # testing gather all tasks. might work the same as wait_for
-            t.exception()
+            task.exception()
         except asyncio.InvalidStateError:
             pass
         except asyncio.TimeoutError:
