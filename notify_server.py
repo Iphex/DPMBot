@@ -1,11 +1,11 @@
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 #Python Libary
 import asyncio
 import datetime
 import logging
 import re
-import traceback
+import os
 
 #Third Party
 import discord
@@ -15,6 +15,7 @@ import mcstatus
 #Local Config File
 if os.path.isfile("config.py"):
     import config # pylint: disable=import-error
+
 # pylint might be annoying here, since he for some reason cant see config
 # unsure how to exactly prevent this
 
@@ -38,6 +39,8 @@ else:
     favicon_github = config.favicon_github # pylint: disable=no-member
 
 client = commands.Bot(command_prefix='#')
+
+
 logger = logging.getLogger()
 handler = logging.FileHandler("dpm_bot.log", mode="a")
 formatter = logging.Formatter("%(asctime)s %(levelname)-8s %(ctx)s")
@@ -48,7 +51,7 @@ logger.setLevel(logging.INFO)
 
 LINE = '-------------------------'
 
-ping_Frequency = 60 # in Seconds
+ping_Frequency = 30 # in Seconds
 
 
 def get_prefix(bot, message):
@@ -338,9 +341,9 @@ def load_functions():
                 maps = "??"
 
             if response[10] is not None:
-                dns_name = response[10]
+                dns_real_name = response[10]
             else:
-                dns_name = "??"
+                dns_real_name = "??"
             if response[11] is not None:
                 max_players = response[11]
             else:
@@ -370,7 +373,7 @@ def load_functions():
             software = "??"
             current_players = 0
             max_players = 12
-            dns_name = "??"
+            dns_real_name = "??"
             maps = "??"
             version = "??"
             motd = dns_name # pylint: disable=no-member
@@ -496,7 +499,7 @@ def handle_exit():
         task.cancel()
         try:
             client.loop.run_until_complete(
-                asyncio.wait_for(t, 5, loop=client.loop))
+                asyncio.wait_for(task, 5, loop=client.loop))
             # testing gather all tasks. might work the same as wait_for
             task.exception()
         except asyncio.InvalidStateError:
