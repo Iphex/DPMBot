@@ -17,8 +17,27 @@ import mcstatus
 
 import config # pylint: disable=import-error
 # pylint might be annoying here, since he for some reason cant see config
-# unsure how to exactly prevent this :
-TOKEN = config.discord_token # pylint: disable=no-member
+# unsure how to exactly prevent this
+
+#Checking for env Variable to work with Heroku
+#Gotta test it with evniron.get default value being the config file.
+if os.environ.get('discord_token') is not None:
+    discord_token = os.environ.get('discord_token')
+    a_certain_user = os.environ.get('a_certain_user')
+    dns_name = os.environ.get('dns_name')
+    server_name = os.environ.get('server_name')
+    port = os.environ.get('port')
+    conf_ip = os.environ.get('ip')
+    favicon_github = os.environ.get('favicon_github')
+else:
+    discord_token = config.discord_token # pylint: disable=no-member
+    a_certain_user = config.a_certain_user # pylint: disable=no-member
+    dns_name = config.dns_name # pylint: disable=no-member
+    server_name = config.server_name # pylint: disable=no-member
+    port = config.port # pylint: disable=no-member
+    conf_ip = config.ip # pylint: disable=no-member
+    favicon_github = config.favicon_github # pylint: disable=no-member
+
 client = commands.Bot(command_prefix='#')
 logger = logging.getLogger()
 handler = logging.FileHandler("dpm_bot.log", mode="a")
@@ -183,7 +202,7 @@ def load_functions():
         """
         msg = '''Thank you my godemporer {0.author.mention},
             I hereby order @{1} to shut the fuck up,
-            I am here of Free Will! 👋'''.format(ctx, config.a_certain_user) # pylint: disable=no-member
+            I am here of Free Will! 👋'''.format(ctx, a_certain_user) # pylint: disable=no-member
         await ctx.send(msg)
 
     @client.command(aliases=['info', 'information'])
@@ -201,7 +220,7 @@ def load_functions():
             Listing Current Players. Calls mc_info for Values
         """
         # TODO embed current / max players
-        response = mc_info(config.dns_name, int(config.port)) # pylint: disable=no-member
+        response = mc_info(dns_name, int(port)) # pylint: disable=no-member
         if response[2] is not None:
             current_players = response[2]
         else:
@@ -263,9 +282,9 @@ def load_functions():
         aliases=['mc', 'minecraft', 'Minecraft', 'status', 'Status', 'up'])
     async def _mc(ctx: str.lower):
         await ctx.send("Fetching Server Status")
-        response = mc_info(config.dns_name, int(config.port)) # pylint: disable=no-member
+        response = mc_info(dns_name, int(port))
         if response[0]:
-            ip = config.ip
+            ip = conf_ip
             if response[2] is not None:
                 current_players = response[2]
             else:
@@ -294,7 +313,7 @@ def load_functions():
             if response[6] is not None:
                 motd = response[6]
             else:
-                motd = config.dns_name # pylint: disable=no-member
+                motd = dns_name # pylint: disable=no-member
 
             if response[7] is not None:
                 # Implement last_online for when nobody is online.
@@ -347,9 +366,9 @@ def load_functions():
             dns_name = "??"
             maps = "??"
             version = "??"
-            motd = config.dns_name # pylint: disable=no-member
+            motd = dns_name # pylint: disable=no-member
             last_online = "??"
-            name = config.server_name # pylint: disable=no-member
+            name = server_name # pylint: disable=no-member
             latency = "??"
             ip = "??"
         try:
@@ -359,7 +378,7 @@ def load_functions():
                 timestamp=datetime.datetime.utcnow())
             embed.set_footer(
                 text="Powered by DPMBot",
-                icon_url="{0}".format(config.favicon_github)) # pylint: disable=no-member
+                icon_url="{0}".format(favicon_github)) # pylint: disable=no-member
             if current_players != 0:
                 # add minimum 5 spaces, and after that according to number of players.
                 embed.add_field(
@@ -511,12 +530,12 @@ async def status_task():
     await client.wait_until_ready()
     while True:
         await asyncio.sleep(ping_Frequency)
-        response = mc_info(config.dns_name, config.port) # pylint: disable=no-member
+        response = mc_info(dns_name, port) # pylint: disable=no-member
         try:
             if response[0] is False:
                 await client.change_presence(
                     activity=discord.Game(
-                        name=config.server_name + ' is Offline'),  # pylint: disable=no-member
+                        name=server_name + ' is Offline'),  # pylint: disable=no-member
                     status=discord.Status.dnd)
                 print("Response is not true")
                 continue
@@ -574,7 +593,7 @@ async def on_ready():
         client.user.name, client.user.id))
     await client.change_presence(
         activity=discord.Game(
-            name=config.server_name + ' is Offline'), # pylint: disable=no-member
+            name=server_name + ' is Offline'), # pylint: disable=no-member
         status=discord.Status.dnd)
 
 load_functions()
@@ -591,7 +610,7 @@ while True:
     client.loop.create_task(status_task())
     try:
         # actually unsure how it "realy" works, but it works? good enough :D
-        client.loop.run_until_complete(client.start(TOKEN, bot=True, reconnect=True))
+        client.loop.run_until_complete(client.start(discord_token, bot=True, reconnect=True))
     # except discord.LoginFailure:
     # this might create a bug unsure tho :(
     #    logger.critical('Invalid token')
