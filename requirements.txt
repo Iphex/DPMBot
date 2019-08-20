@@ -1,2 +1,2 @@
-"git+https://github.com/Rapptz/discord.py"
-"git+https://github.com/Dinnerbone/mcstatus"
+git+https://github.com/Rapptz/discord.py
+git+https://github.com/Dinnerbone/mcstatus
