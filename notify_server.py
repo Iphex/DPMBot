@@ -81,9 +81,6 @@ if __name__ == '__main__':
 """
 
 
-
-
-
 def mc_info(address, port):
     """
         Mc Info uses mcstatus to ping a Minecraft Server and query Information about it
