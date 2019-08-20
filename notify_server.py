@@ -1,6 +1,6 @@
 __version__ = "0.0.5"
 
-
+#Python Libary
 import asyncio
 import datetime
 import json
@@ -11,11 +11,14 @@ import urllib.request
 import traceback
 import sys
 
+#Third Party
 import discord
 from discord.ext import commands
 import mcstatus
 
-import config # pylint: disable=import-error
+#Local Config File
+if os.path.isfile("config.py"):
+    import config # pylint: disable=import-error
 # pylint might be annoying here, since he for some reason cant see config
 # unsure how to exactly prevent this
 
