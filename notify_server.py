@@ -135,14 +135,13 @@ def mc_info(address, port):
                 address = None
                 players_max = None
                 last_online = None
-                logger.info('Could not set variables after Query', exc_info=True)
+                #logger.info('Could not set variables after Query', exc_info=True)
         except Exception:
             players_online = query.players.online
             players_names = None
-            logger.info('Server Ping works, but Query Failed', exc_info=True)
+           # logger.info('Server Ping works, but Query Failed', exc_info=True)
     except Exception:
         # to make sure nothing is called that hasn't been set before
-        print("status Failed!")
         status = False
         players_online = None
         players_names = None
@@ -156,7 +155,7 @@ def mc_info(address, port):
         address = None
         players_max = None
         last_online = ["", "", "", ""]
-        logger.info('Server Down, Status Ping Failed', exc_info=True)
+       # logger.info('Server Down, Status Ping Failed', exc_info=True)
     # Logging threw an error here, so I gotta check it up again.
     #logger.info(status, ip, players_online, players_names, software, version, description, last_online, latency, maps, address, players_max)
     return (status, ip, players_online, players_names,
@@ -205,7 +204,7 @@ def load_functions():
         """
         msg = '''Thank you my godemporer {0.author.mention},
             I hereby order @{1} to shut the fuck up,
-            I am here of Free Will! 👋'''.format(ctx, a_certain_user) # pylint: disable=no-member
+            I am here of Free Will! 👋'''.format(ctx, a_certain_user)
         await ctx.send(msg)
 
     @client.command(aliases=['info', 'information'])
@@ -223,7 +222,7 @@ def load_functions():
             Listing Current Players. Calls mc_info for Values
         """
         # TODO embed current / max players
-        response = mc_info(dns_name, int(port)) # pylint: disable=no-member
+        response = mc_info(dns_name, int(port))
         if response[2] is not None:
             current_players = response[2]
         else:
@@ -316,7 +315,7 @@ def load_functions():
             if response[6] is not None:
                 motd = response[6]
             else:
-                motd = dns_name # pylint: disable=no-member
+                motd = dns_name
 
             if response[7] is not None:
                 # Implement last_online for when nobody is online.
@@ -373,9 +372,9 @@ def load_functions():
             dns_real_name = "??"
             maps = "??"
             version = "??"
-            motd = dns_name # pylint: disable=no-member
+            motd = dns_name
             last_online = "??"
-            name = server_name # pylint: disable=no-member
+            name = server_name
             latency = "??"
             ip = "??"
         try:
@@ -385,7 +384,7 @@ def load_functions():
                 timestamp=datetime.datetime.utcnow())
             embed.set_footer(
                 text="Powered by DPMBot",
-                icon_url="{0}".format(favicon_github)) # pylint: disable=no-member
+                icon_url="{0}".format(favicon_github))
             if current_players != 0:
                 # add minimum 5 spaces, and after that according to number of players.
                 embed.add_field(
@@ -410,7 +409,7 @@ def load_functions():
                     value="Offline",
                     inline=False)
         except Exception:
-            logger.error('Couldnt Embed', exc_info=True)
+           # logger.error('Couldnt Embed', exc_info=True)
             embed = discord.Embed(
                 colour=discord.Colour(0x80ff),
                 description=status,
@@ -504,7 +503,7 @@ def handle_exit():
         except asyncio.TimeoutError:
             pass
         except asyncio.CancelledError:
-            logger.debug('All Pending task have been cancelled')
+           # logger.debug('All Pending task have been cancelled')
             pass
 
 
@@ -535,14 +534,14 @@ async def status_task():
     await client.wait_until_ready()
     while True:
         await asyncio.sleep(ping_Frequency)
-        response = mc_info(dns_name, port) # pylint: disable=no-member
+        response = mc_info(dns_name, port)
         try:
             if response[0] is False:
                 await client.change_presence(
                     activity=discord.Game(
-                        name=server_name + ' is Offline'),  # pylint: disable=no-member
+                        name=server_name + ' is Offline'),
                     status=discord.Status.dnd)
-                print("Response is not true")
+               # print("Response is not true")
                 continue
             else:
                 try:
@@ -564,7 +563,7 @@ async def status_task():
                     current_players = "??"
                     latency = "??"
                     max_players = "??"
-                    logger.info('Server Down', exc_info=True)
+                    #logger.info('Server Down', exc_info=True)
                     continue
 
                 if current_players == 0:
@@ -598,7 +597,7 @@ async def on_ready():
         client.user.name, client.user.id))
     await client.change_presence(
         activity=discord.Game(
-            name=server_name + ' is Offline'), # pylint: disable=no-member
+            name=server_name + ' is Offline'),
         status=discord.Status.dnd)
 
 load_functions()
