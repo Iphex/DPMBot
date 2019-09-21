@@ -135,11 +135,11 @@ def mc_info(address, port):
                 address = None
                 players_max = None
                 last_online = None
-                #logger.info('Could not set variables after Query', exc_info=True)
+                logger.info('Could not set variables after Query', exc_info=True)
         except Exception:
             players_online = query.players.online
             players_names = None
-           # logger.info('Server Ping works, but Query Failed', exc_info=True)
+            logger.info('Server Ping works, but Query Failed', exc_info=True)
     except Exception:
         # to make sure nothing is called that hasn't been set before
         status = False
@@ -155,7 +155,7 @@ def mc_info(address, port):
         address = None
         players_max = None
         last_online = ["", "", "", ""]
-       # logger.info('Server Down, Status Ping Failed', exc_info=True)
+        logger.info('Server Down, Status Ping Failed', exc_info=True)
     # Logging threw an error here, so I gotta check it up again.
     #logger.info(status, ip, players_online, players_names, software, version, description, last_online, latency, maps, address, players_max)
     return (status, ip, players_online, players_names,
@@ -368,7 +368,7 @@ def load_functions():
             players_names = "??"
             software = "??"
             current_players = 0
-            max_players = 12
+            max_players = "??"
             dns_real_name = "??"
             maps = "??"
             version = "??"
@@ -409,7 +409,7 @@ def load_functions():
                     value="Offline",
                     inline=False)
         except Exception:
-           # logger.error('Couldnt Embed', exc_info=True)
+            logger.error('Couldnt Embed', exc_info=True)
             embed = discord.Embed(
                 colour=discord.Colour(0x80ff),
                 description=status,
@@ -417,8 +417,8 @@ def load_functions():
             embed.add_field(
                 name="Players {0}/{1}".format(current_players, max_players),
                 value=players_online + "\n")
-
         await ctx.send(embed=embed)
+
 
     @client.command(aliases=['restart'])
     async def _restart(ctx: str.lower):
@@ -503,7 +503,7 @@ def handle_exit():
         except asyncio.TimeoutError:
             pass
         except asyncio.CancelledError:
-           # logger.debug('All Pending task have been cancelled')
+            logger.debug('All Pending task have been cancelled')
             pass
 
 
@@ -563,7 +563,7 @@ async def status_task():
                     current_players = "??"
                     latency = "??"
                     max_players = "??"
-                    #logger.info('Server Down', exc_info=True)
+                    logger.info('Server Down', exc_info=True)
                     continue
 
                 if current_players == 0:
